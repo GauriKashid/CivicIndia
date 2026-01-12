@@ -1,10 +1,33 @@
-import { createRequire } from "node:module";
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { transform } from "@swc/core";
-import * as vite from "vite";
-import { exactRegex } from "@rolldown/pluginutils";
+//#region rolldown:runtime
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __copyProps = (to, from, except, desc) => {
+	if (from && typeof from === "object" || typeof from === "function") for (var keys = __getOwnPropNames(from), i = 0, n = keys.length, key; i < n; i++) {
+		key = keys[i];
+		if (!__hasOwnProp.call(to, key) && key !== except) __defProp(to, key, {
+			get: ((k) => from[k]).bind(null, key),
+			enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable
+		});
+	}
+	return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", {
+	value: mod,
+	enumerable: true
+}) : target, mod));
+
+//#endregion
+const node_fs = __toESM(require("node:fs"));
+const node_path = __toESM(require("node:path"));
+const node_url = __toESM(require("node:url"));
+const node_module = __toESM(require("node:module"));
+const __swc_core = __toESM(require("@swc/core"));
+const vite = __toESM(require("vite"));
+const __rolldown_pluginutils = __toESM(require("@rolldown/pluginutils"));
 
 //#region ../common/refresh-utils.ts
 const runtimePublicPath = "/@react-refresh";
@@ -92,8 +115,8 @@ const silenceUseClientWarning = (userConfig) => ({ rollupOptions: { onwarn(warni
 
 //#endregion
 //#region src/index.ts
-const _dirname = typeof __dirname !== "undefined" ? __dirname : dirname(fileURLToPath(import.meta.url));
-const resolve = createRequire(typeof __filename !== "undefined" ? __filename : import.meta.url).resolve;
+const _dirname = typeof __dirname !== "undefined" ? __dirname : (0, node_path.dirname)((0, node_url.fileURLToPath)(require("url").pathToFileURL(__filename).href));
+const resolve = (0, node_module.createRequire)(typeof __filename !== "undefined" ? __filename : require("url").pathToFileURL(__filename).href).resolve;
 const react = (_options) => {
 	let hmrDisabled = false;
 	const options = {
@@ -112,12 +135,12 @@ const react = (_options) => {
 			apply: "serve",
 			enforce: "pre",
 			resolveId: {
-				filter: { id: exactRegex(runtimePublicPath) },
+				filter: { id: (0, __rolldown_pluginutils.exactRegex)(runtimePublicPath) },
 				handler: (id) => id === runtimePublicPath ? id : void 0
 			},
 			load: {
-				filter: { id: exactRegex(runtimePublicPath) },
-				handler: (id) => id === runtimePublicPath ? readFileSync(join(_dirname, "refresh-runtime.js"), "utf-8").replace(/__README_URL__/g, "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react-swc") : void 0
+				filter: { id: (0, __rolldown_pluginutils.exactRegex)(runtimePublicPath) },
+				handler: (id) => id === runtimePublicPath ? (0, node_fs.readFileSync)((0, node_path.join)(_dirname, "refresh-runtime.js"), "utf-8").replace(/__README_URL__/g, "https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react-swc") : void 0
 			}
 		},
 		{
@@ -217,7 +240,7 @@ const transformWithOptions = async (id, code, target, options, reactConfig) => {
 			}
 		};
 		if (options.useAtYourOwnRisk_mutateSwcOptions) options.useAtYourOwnRisk_mutateSwcOptions(swcOptions);
-		result = await transform(code, swcOptions);
+		result = await (0, __swc_core.transform)(code, swcOptions);
 	} catch (e) {
 		const message = e.message;
 		const fileStartIndex = message.indexOf("╭─[");
@@ -235,4 +258,5 @@ const transformWithOptions = async (id, code, target, options, reactConfig) => {
 var src_default = react;
 
 //#endregion
-export { src_default as default };
+module.exports = src_default;
+module.exports.default = module.exports

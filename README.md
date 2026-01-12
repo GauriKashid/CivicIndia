@@ -1,100 +1,134 @@
-<p align="center">
-  <a href="https://swc.rs/">
-    <img alt="swc" src="https://raw.githubusercontent.com/swc-project/logo/master/swc.png" width="546">
-  </a>
-</p>
+# @vitejs/plugin-react-swc [![npm](https://img.shields.io/npm/v/@vitejs/plugin-react-swc)](https://www.npmjs.com/package/@vitejs/plugin-react-swc)
 
-<p align="center">
-  Make the web (development) faster.
-</p>
+Speed up your Vite dev server with [SWC](https://swc.rs/)
 
-<p align="center">
-  <a href="https://www.npmjs.com/package/@swc/core"><img alt="downloads (@swc/core)" src="https://img.shields.io/npm/dm/@swc/core?label=downloads%20%28%40swc%2Fcore%29"></a>
-  <a href="https://www.npmjs.com/package/@swc/counter?activeTab=dependents"><img alt="downloads (3rd party)" src="https://img.shields.io/npm/dm/@swc/counter?label=downloads%20%283rd%20party%29"></a>
-</p>
-<p align="center">
-  <a href="https://crates.io/crates/swc_ecma_parser"><img alt="undefined" src="https://img.shields.io/crates/d/swc_ecma_parser.svg?label=crates.io%20downloads"></a>
-  <a href="https://github.com/swc-project/swc/releases/latest"><img alt="GitHub release (latest SemVer)" src="https://img.shields.io/github/v/release/swc-project/swc"></a>
-</p>
-<p align="center">
-  <img alt="GitHub code size in bytes" src="https://img.shields.io/github/languages/code-size/swc-project/swc">
-  <a href="https://github.com/swc-project/swc/blob/main/package.json#L22"><img alt="node-current (scoped)" src="https://img.shields.io/node/v/@swc/core"></a>
-</p>
-<p align="center">
-  <a href="https://discord.com/invite/GnHbXTdZz6"><img alt="Discord" src="https://img.shields.io/discord/889779439272075314"></a>
-</p>
+- ✅ A fast Fast Refresh (~20x faster than Babel)
+- ✅ Enable [automatic JSX runtime](https://reactjs.org/blog/2020/09/22/introducing-the-new-jsx-transform.html)
 
-SWC (stands for `Speedy Web Compiler`) is a super-fast TypeScript / JavaScript compiler written in Rust. It's a library for Rust and JavaScript at the same time. If you are using SWC from Rust, see [rustdoc](https://rustdoc.swc.rs/swc/) and for most users, your entry point for using the library will be [parser](https://rustdoc.swc.rs/swc_ecma_parser/).
+## Installation
 
-Also, SWC tries to ensure that
+```sh
+npm i -D @vitejs/plugin-react-swc
+```
 
-> If you select the latest version of each crates, it will work
+## Usage
 
-for rust users.
+```ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react-swc'
 
-MSRV of crates is currently `1.73`.
+export default defineConfig({
+  plugins: [react()],
+})
+```
 
-To update all SWC crates you use, you can run `curl https://raw.githubusercontent.com/swc-project/swc/main/scripts/update-all-swc-crates.sh | bash -s`. This script will update all dependencies to the latest version and run `cargo build` to ensure that everything works.
-Note that you need
+## Caveats
 
--   `jq`
--   `cargo upgrade`
+This plugin has limited options to enable good performances and be transpiler agnostic. Here is the list of non-configurable options that impact runtime behaviour:
 
-command to run the script.
+- [useDefineForClassFields](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#the-usedefineforclassfields-flag-and-the-declare-property-modifier) is always activated, as this matches the current ECMAScript spec
+- `jsx runtime` is always `automatic`
+- In development:
+  - esbuild is disabled, so the [esbuild configuration](https://vite.dev/config/shared-options.html#esbuild) has no effect
+  - `target` is ignored and defaults to `es2020` (see [`devTarget`](#devtarget))
+  - JS files are not transformed
+  - tsconfig is not resolved, so properties other than the ones listed above behaves like TS defaults
 
-Supported Node Versions:
+## Options
 
--   Node v10+ for usage
--   Node v20+ for development
+### jsxImportSource
 
----
+Control where the JSX factory is imported from.
 
-If you are using SWC from JavaScript, please refer to [docs on the website](https://swc.rs/docs/installation/).
+`@default` "react"
 
-# Documentation
+```ts
+react({ jsxImportSource: '@emotion/react' })
+```
 
-Check out the documentation [in the website](https://swc.rs/docs/installation/).
+### tsDecorators
 
-# Features
+Enable TypeScript decorators. Requires `experimentalDecorators` in tsconfig.
 
-Please see [comparison with babel](https://swc.rs/docs/migrating-from-babel).
+`@default` false
 
-# Performance
+```ts
+react({ tsDecorators: true })
+```
 
-Please see [benchmark results](https://swc.rs/docs/benchmark-transform) on the website.
+### plugins
 
-# Supporting development
+Use SWC plugins. Enable SWC at build time.
 
-<h2 align="center">Supporting swc</h2>
+```ts
+react({ plugins: [['@swc/plugin-styled-components', {}]] })
+```
 
-## Star History
+### devTarget
 
-[![Star History Chart](https://api.star-history.com/svg?repos=swc-project/swc&type=Timeline)](https://www.star-history.com/#swc-project/swc&Timeline)
+Set the target for SWC in dev. This can avoid to down-transpile private class method for example.
 
-## Powered by
+For production target, see https://vite.dev/config/build-options.html#build-target.
 
-[![JetBrains logo.](https://resources.jetbrains.com/storage/products/company/brand/logos/jetbrains.svg)](https://jb.gg/OpenSourceSupport)
+`@default` "es2020"
 
-## Sponsors
+```ts
+react({ devTarget: 'es2022' })
+```
 
-<p align="center">
-  <a href="https://opencollective.com/swc">
-    <img src="https://raw.githubusercontent.com/swc-project/swc-sponsor-images/main/sponsors.svg" alt="Sponsors">
-  </a>
-</p>
+### parserConfig
 
-SWC is a community-driven project, and is maintained by a group of [volunteers](https://swc.rs/docs/team). If you'd like to help support the future of the project, please consider:
+Override the default include list (.ts, .tsx, .mts, .jsx, .mdx).
 
--   Giving developer time on the project. (Message us on [Discord](https://discord.gg/GnHbXTdZz6) (preferred) or [Github discussions](https://github.com/swc-project/swc/discussions) for guidance!)
--   Giving funds by becoming a sponsor (see https://opencollective.com/swc)!
+This requires to redefine the config for any file you want to be included (ts, mdx, ...).
 
-## Contributing
+If you want to trigger fast refresh on compiled JS, use `jsx: true`. Exclusion of node_modules should be handled by the function if needed. Using this option to use JSX inside `.js` files is highly discouraged and can be removed in any future version.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). You may also find the architecture
-documentation useful ([ARCHITECTURE.md](ARCHITECTURE.md)).
+```ts
+react({
+  parserConfig(id) {
+    if (id.endsWith('.res')) return { syntax: 'ecmascript', jsx: true }
+    if (id.endsWith('.ts')) return { syntax: 'typescript', tsx: false }
+  },
+})
+```
 
-## License
+### reactRefreshHost
 
-SWC is primarily distributed under the terms of the Apache License (Version 2.0).
+The `reactRefreshHost` option is only necessary in a module federation context. It enables HMR to work between a remote & host application. In your remote Vite config, you would add your host origin:
 
-See [LICENSE](LICENSE) for details.
+```js
+react({ reactRefreshHost: 'http://localhost:3000' })
+```
+
+Under the hood, this simply updates the React Fash Refresh runtime URL from `/@react-refresh` to `http://localhost:3000/@react-refresh` to ensure there is only one Refresh runtime across the whole application. Note that if you define `base` option in the host application, you need to include it in the option, like: `http://localhost:3000/{base}`.
+
+### useAtYourOwnRisk_mutateSwcOptions
+
+The future of Vite is with OXC, and from the beginning this was a design choice to not exposed too many specialties from SWC so that Vite React users can move to another transformer later.
+Also debugging why some specific version of decorators with some other unstable/legacy feature doesn't work is not fun, so we won't provide support for it, hence the name `useAtYourOwnRisk`.
+
+```ts
+react({
+  useAtYourOwnRisk_mutateSwcOptions(options) {
+    options.jsc.parser.decorators = true
+    options.jsc.transform.decoratorVersion = '2022-03'
+  },
+})
+```
+
+### disableOxcRecommendation
+
+If set, disables the recommendation to use `@vitejs/plugin-react-oxc` (which is shown when `rolldown-vite` is detected and neither `swc` plugins are used nor the `swc` options are mutated).
+
+```ts
+react({ disableOxcRecommendation: true })
+```
+
+## Consistent components exports
+
+For React refresh to work correctly, your file should only export React components. The best explanation I've read is the one from the [Gatsby docs](https://www.gatsbyjs.com/docs/reference/local-development/fast-refresh/#how-it-works).
+
+If an incompatible change in exports is found, the module will be invalidated and HMR will propagate. To make it easier to export simple constants alongside your component, the module is only invalidated when their value changes.
+
+You can catch mistakes and get more detailed warning with this [eslint rule](https://github.com/ArnaudBarre/eslint-plugin-react-refresh).
